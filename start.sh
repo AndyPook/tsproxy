@@ -1,7 +1,7 @@
 #!/bin/ash
 #trap 'kill -TERM $PID' TERM INT
 
-echo "This is Tailscale-Caddy-proxy version"
+echo "*** tailscale version"
 tailscale --version
 
 # if [ ! -z "$SKIP_CADDYFILE_GENERATION" ] ; then
@@ -13,8 +13,8 @@ tailscale --version
 #    echo 'reverse_proxy' $CADDY_TARGET >> /etc/caddy/Caddyfile
 # fi
 
-echo "Starting socat - ${PROXY_TARGET}:${PROXY_PORT}"
-socat -v -d -d tcp-listen:${PROXY_PORT},fork,reuseaddr tcp:${PROXY_TARGET}:${PROXY_PORT} &
+echo "*** Starting socat - ${PROXY_TARGET}:${PROXY_PORT}"
+socat -d -d tcp-listen:${PROXY_PORT},fork,reuseaddr tcp:${PROXY_TARGET}:${PROXY_PORT} &
 
-echo "Starting Tailscale"
+echo "*** Starting Tailscale"
 exec /usr/local/bin/containerboot
