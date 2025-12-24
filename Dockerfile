@@ -2,9 +2,10 @@
 # check=skip=SecretsUsedInArgOrEnv
 
 ## originally from https://github.com/hollie/tailscale-caddy-proxy/blob/main/image/Dockerfile
-ARG TAILSCALE_VERSION=latest
+#ARG TAILSCALE_VERSION=latest
+#FROM tailscale/tailscale:$TAILSCALE_VERSION
 
-FROM tailscale/tailscale:$TAILSCALE_VERSION
+FROM alpine:latest
 
 LABEL maintainer="andy@a6k.dev"
 
@@ -20,15 +21,20 @@ ENV TS_AUTH_ONCE=true
 
 ENV KUBERNETES_SERVICE_HOST=
 
-# Ensure Caddy can access the tailscale socket, Caddy expects it to be under /var/run/tailscale so make a symlink
-RUN mkdir --parents /var/run/tailscale && ln -s /tmp/tailscaled.sock /var/run/tailscale/tailscaled.sock
+# Copy Tailscale binaries from the tailscale image on Docker Hub.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /app/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /app/tailscale
+RUN mkdir -p /var/run/tailscale /var/cache/tailscale /var/lib/tailscale
 
-RUN apk update && apk upgrade --no-cache && apk add --no-cache socat
+RUN apk update && apk upgrade --no-cache && apk add --no-cache tini-static socat
 
 # Add the startup script
-COPY start.sh /usr/bin/start.sh
-RUN  chmod +x /usr/bin/start.sh
-
+COPY start.sh /app/start.sh
+RUN  chmod +x /app/start.sh
 
 # And run it
-CMD  [ "start.sh" ]
+ENTRYPOINT ["sh"]
+#ENTRYPOINT ["/sbin/tini-static", "--"]
+
+CMD ["/app/start.sh"]
+#ENTRYPOINT  [ "/bin/sh" "start.sh" ]
