@@ -17,7 +17,8 @@ ENV TS_TAILSCALED_EXTRA_ARGS=--state=mem:
 ENV TS_USERSPACE=true
 ENV TS_STATE_DIR=/var/lib/tailscale/
 ENV TS_AUTH_ONCE=true
-ENV TS_KUBE_SECRET=
+
+ENV KUBERNETES_SERVICE_HOST=
 
 RUN apk update && apk upgrade --no-cache && apk add --no-cache socat
 
